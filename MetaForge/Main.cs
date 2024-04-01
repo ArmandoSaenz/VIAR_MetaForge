@@ -15,12 +15,36 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MetaForge.Utilities;
+using System.IO;
+using System.Threading;
+using System.Data.Common;
 
 namespace MetaForge
 {
     public partial class Main : Form
     {
-        
+        string[] ExtImagenes = { ".jpg", ".jpeg", ".png", ".bmp", ".gif" };
+        string Ext = "";
+        string ImagePath = "";
+        SortedList<int, object[]> Metadatas = new SortedList<int, object[]>();
+        private bool IsImage(DragEventArgs e)
+        {
+            Array data = ((IDataObject)e.Data).GetData("FileDrop") as Array;
+            if (data != null)
+            {
+                if ((data.Length > 0) && (data.GetValue(0) is String))
+                {
+                    GetPathAndExt(data.GetValue(0).ToString());
+                    return ExtImagenes.Contains(Ext);
+                }
+            }
+            return false;
+        }
+        void GetPathAndExt(string path)
+        {
+            ImagePath = path;
+            Ext = System.IO.Path.GetExtension(ImagePath).ToLower();
+        }
         object[] GetMetadata(PropertyItem data)
         {
             object[] item = new object[2];
@@ -28,8 +52,6 @@ namespace MetaForge
             switch (data.Id)
             {
                 case 2:
-                    item[1] = Bytes2Degrees(data.Value);
-                    break;
                 case 4:
                     item[1] = Bytes2Degrees(data.Value);
                     break;
@@ -37,7 +59,7 @@ namespace MetaForge
                     item[1] = Dictionaries.AltitudRef[int.Parse(DecodePropertyValue(data))];
                     break;
                 case 6:
-                    item[1] = Bytes2Degrees(data.Value);
+                    item[1] = GetAltitude(data.Value);
                     break;
                 case 274:
                     item[1] = Dictionaries.Orientacion[int.Parse(DecodePropertyValue(data))];
@@ -52,17 +74,19 @@ namespace MetaForge
         {
             Image image = (Bitmap)pbImage.Image.Clone();
             dgvMetadatos.Rows.Clear();
+            Metadatas.Clear();
             foreach (PropertyItem property in image.PropertyItems)
             {
                 try
                 {
-                    dgvMetadatos.Rows.Add(GetMetadata(property));
+                    Metadatas.Add(property.Id, GetMetadata(property));
                 }
                 catch
                 { 
                     //
                 }
             }
+            Metadatas.Values.ToList().ForEach(metadata => dgvMetadatos.Rows.Add(metadata));
             try
             {
                 double latitud = Bytes2Degrees(image.GetPropertyItem(2).Value, image.GetPropertyItem(1).Value);
@@ -76,6 +100,7 @@ namespace MetaForge
             }
         }
 
+        int GetAltitude(byte[] value) => BitConverter.ToInt32(value, 0);
         string DecodePropertyValue(PropertyItem property)
         {
             // La interpretación del valor depende del tipo de la propiedad
@@ -150,7 +175,7 @@ namespace MetaForge
         {
             if(openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                tbURLImage.Text = openFileDialog1.FileName;
+                tbURLImage.Text = openFileDialog1.FileName;                
                 tbURLImage_KeyPress(btnUrl, new KeyPressEventArgs((char)13));
             }
         }
@@ -178,7 +203,11 @@ namespace MetaForge
                 {
                     try
                     {
-                        pbImage.Image = Image.FromFile(tbURLImage.Text);
+                        using (var bitmap = Image.FromFile(tbURLImage.Text))
+                        {
+                            pbImage.Image = bitmap.Clone() as Bitmap;
+                        }
+                        GetPathAndExt(tbURLImage.Text);
                         ListMetadata();
                     }
                     catch
@@ -196,6 +225,56 @@ namespace MetaForge
         private void pbImage_DragDrop(object sender, DragEventArgs e)
         {
             MessageBox.Show(e.Data.GetData(DataFormats.FileDrop).ToString());
+        }
+
+        private void pbImage_DragEnter(object sender, DragEventArgs e)
+        {
+            MessageBox.Show("Entro");
+        }
+
+        private void Main_DragEnter(object sender, DragEventArgs e)
+        {
+            if ((e.AllowedEffect & DragDropEffects.Copy) == DragDropEffects.Copy && IsImage(e))
+            {
+                e.Effect = DragDropEffects.Copy;
+            }
+            else
+            {
+                e.Effect = DragDropEffects.None;
+            }
+        }
+
+        private void Main_DragDrop(object sender, DragEventArgs e)
+        {
+            tbURLImage.Text = ImagePath;
+            tbURLImage_KeyPress(btnUrl, new KeyPressEventArgs((char)13));
+        }
+
+        private ImageCodecInfo GetEncoderInfo(ImageFormat format)
+        {
+            ImageCodecInfo[] codecs = ImageCodecInfo.GetImageDecoders();
+            foreach (ImageCodecInfo codec in codecs)
+            {
+                if (codec.FormatID == format.Guid)
+                {
+                    return codec;
+                }
+            }
+            return null;
+        }
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+            string newpath = Path.Combine(Path.GetDirectoryName(ImagePath), $"{Path.GetFileNameWithoutExtension(ImagePath)}_sin_Metadatos{Ext}");
+            saveFileDialog1.FileName = newpath;
+            if(saveFileDialog1.ShowDialog() == DialogResult.OK) 
+            {
+                using (var bitmap = new Bitmap(pbImage.Image))
+                {
+                    bitmap.Save(saveFileDialog1.FileName, pbImage.Image.RawFormat);
+                }
+                MessageBox.Show($"La imagen se guardado en la ruta:{newpath}", "Guardar", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
         }
     }
 }
