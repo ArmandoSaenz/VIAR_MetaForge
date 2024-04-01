@@ -29,6 +29,9 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.pbImage = new System.Windows.Forms.PictureBox();
             this.btnUrl = new System.Windows.Forms.Button();
@@ -36,13 +39,13 @@
             this.label1 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.dgvMetadatos = new System.Windows.Forms.DataGridView();
-            this.colMetadata = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colValue = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.lMaps = new System.Windows.Forms.Label();
             this.btnCopy = new System.Windows.Forms.Button();
+            this.lMaps = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.colMetadata = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colValue = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbImage)).BeginInit();
             this.groupBox2.SuspendLayout();
@@ -61,7 +64,6 @@
             this.groupBox1.Size = new System.Drawing.Size(383, 335);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Imagen";
             // 
             // pbImage
             // 
@@ -74,16 +76,20 @@
             this.pbImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pbImage.TabIndex = 3;
             this.pbImage.TabStop = false;
+            this.toolTip1.SetToolTip(this.pbImage, "Se puede arrastrar la imagen a este espacio");
             this.pbImage.LoadCompleted += new System.ComponentModel.AsyncCompletedEventHandler(this.pbImage_LoadCompleted);
+            this.pbImage.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbImage_DragDrop);
             this.pbImage.Validated += new System.EventHandler(this.pbImage_Validated);
             // 
             // btnUrl
             // 
+            this.btnUrl.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.btnUrl.Location = new System.Drawing.Point(338, 30);
             this.btnUrl.Name = "btnUrl";
             this.btnUrl.Size = new System.Drawing.Size(36, 23);
             this.btnUrl.TabIndex = 2;
             this.btnUrl.Text = "...";
+            this.toolTip1.SetToolTip(this.btnUrl, "Buscar una imagen");
             this.btnUrl.UseVisualStyleBackColor = true;
             this.btnUrl.Click += new System.EventHandler(this.btnUrl_Click);
             // 
@@ -93,6 +99,7 @@
             this.tbURLImage.Name = "tbURLImage";
             this.tbURLImage.Size = new System.Drawing.Size(323, 20);
             this.tbURLImage.TabIndex = 1;
+            this.toolTip1.SetToolTip(this.tbURLImage, "Direccion completa de la imagen");
             this.tbURLImage.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.tbURLImage_KeyPress);
             // 
             // label1
@@ -112,7 +119,6 @@
             this.groupBox2.Size = new System.Drawing.Size(528, 464);
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Metadatos";
             // 
             // dgvMetadatos
             // 
@@ -122,26 +128,20 @@
             this.dgvMetadatos.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.colMetadata,
             this.colValue});
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvMetadatos.DefaultCellStyle = dataGridViewCellStyle3;
             this.dgvMetadatos.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvMetadatos.Location = new System.Drawing.Point(3, 16);
             this.dgvMetadatos.Name = "dgvMetadatos";
             this.dgvMetadatos.RowHeadersVisible = false;
             this.dgvMetadatos.Size = new System.Drawing.Size(522, 445);
             this.dgvMetadatos.TabIndex = 0;
-            // 
-            // colMetadata
-            // 
-            this.colMetadata.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.colMetadata.HeaderText = "Metadato";
-            this.colMetadata.Name = "colMetadata";
-            this.colMetadata.Width = 77;
-            // 
-            // colValue
-            // 
-            this.colValue.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.colValue.HeaderText = "Valor";
-            this.colValue.Name = "colValue";
-            this.colValue.Width = 56;
             // 
             // openFileDialog1
             // 
@@ -157,39 +157,57 @@
             this.groupBox3.Size = new System.Drawing.Size(383, 123);
             this.groupBox3.TabIndex = 2;
             this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "Liga de google maps";
+            // 
+            // btnCopy
+            // 
+            this.btnCopy.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
+            this.btnCopy.Location = new System.Drawing.Point(299, 94);
+            this.btnCopy.Name = "btnCopy";
+            this.btnCopy.Size = new System.Drawing.Size(75, 23);
+            this.btnCopy.TabIndex = 1;
+            this.btnCopy.Text = "Copiar";
+            this.toolTip1.SetToolTip(this.btnCopy, "Copiar la liga de google maps");
+            this.btnCopy.UseVisualStyleBackColor = true;
+            this.btnCopy.Click += new System.EventHandler(this.btnCopy_Click);
             // 
             // lMaps
             // 
             this.lMaps.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lMaps.Location = new System.Drawing.Point(6, 16);
             this.lMaps.Name = "lMaps";
-            this.lMaps.Size = new System.Drawing.Size(368, 52);
+            this.lMaps.Size = new System.Drawing.Size(368, 75);
             this.lMaps.TabIndex = 0;
             this.lMaps.Text = "SIN UBICACION";
             // 
-            // btnCopy
+            // colMetadata
             // 
-            this.btnCopy.Location = new System.Drawing.Point(299, 94);
-            this.btnCopy.Name = "btnCopy";
-            this.btnCopy.Size = new System.Drawing.Size(75, 23);
-            this.btnCopy.TabIndex = 1;
-            this.btnCopy.Text = "Copiar";
-            this.btnCopy.UseVisualStyleBackColor = true;
-            this.btnCopy.Click += new System.EventHandler(this.btnCopy_Click);
+            this.colMetadata.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.Black;
+            this.colMetadata.DefaultCellStyle = dataGridViewCellStyle1;
+            this.colMetadata.HeaderText = "Metadato";
+            this.colMetadata.Name = "colMetadata";
+            this.colMetadata.Width = 77;
             // 
-            // toolTip1
+            // colValue
             // 
-            this.toolTip1.Active = false;
+            this.colValue.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.Black;
+            this.colValue.DefaultCellStyle = dataGridViewCellStyle2;
+            this.colValue.HeaderText = "Valor";
+            this.colValue.Name = "colValue";
+            this.colValue.Width = 56;
             // 
             // Main
             // 
+            this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.SystemColors.ControlDarkDark;
             this.ClientSize = new System.Drawing.Size(941, 488);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
+            this.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "Main";
             this.Text = "VIAR MetaForge";
@@ -212,13 +230,13 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.DataGridView dgvMetadatos;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colMetadata;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colValue;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.Button btnCopy;
         private System.Windows.Forms.Label lMaps;
         private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colMetadata;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colValue;
     }
 }
 

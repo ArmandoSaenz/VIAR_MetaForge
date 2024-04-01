@@ -51,6 +51,7 @@ namespace MetaForge
         void ListMetadata()
         {
             Image image = (Bitmap)pbImage.Image.Clone();
+            dgvMetadatos.Rows.Clear();
             foreach (PropertyItem property in image.PropertyItems)
             {
                 try
@@ -165,7 +166,7 @@ namespace MetaForge
             if (lMaps.Text != "SIN UBICACION")
             {
                 Clipboard.SetText(lMaps.Text);
-                toolTip1.Show("Se ha copiado la liga", btnCopy, 3000);
+                toolTip1.Show("Se copio la liga", lMaps, 3000);
             }
         }
 
@@ -190,6 +191,11 @@ namespace MetaForge
                     MessageBox.Show("La ruta no es un archivo valido", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
+        }
+
+        private void pbImage_DragDrop(object sender, DragEventArgs e)
+        {
+            MessageBox.Show(e.Data.GetData(DataFormats.FileDrop).ToString());
         }
     }
 }
